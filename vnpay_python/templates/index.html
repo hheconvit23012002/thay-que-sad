@@ -1,0 +1,60 @@
+{% extends "base_layout.html" %}
+{% block content %}
+    <div class="panel panel-default">
+        <!-- Default panel contents -->
+        <div class="panel-heading">{{ title }}</div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Customer name</th>
+                    <th scope="col">created at</th>
+                    <th scope="col">Handle</th>
+                  </tr>
+                </thead>
+                <tbody id="table-data">
+                </tbody>
+              </table>
+            {% comment %} <ul class="list-group">
+                <i class="list-group-item"><a href="{% url "payment" %}">Demo Thanh toán</a></i>
+                <i class="list-group-item"><a href="{% url "query" %}">Demo Query (Kiểm tra kết quả Giao dịch tại
+                    VNPAY)</a></i>
+                <i class="list-group-item"><a href="{% url "refund" %}">Demo Refund (Gửi yêu cầu hoàn tiền cho giao
+                    dịch)</a></i>
+            </ul> {% endcomment %}
+        </div>
+    </div>
+    <script>
+      $(document).ready(function() {
+        $.ajax({
+            url: 'http://127.0.0.1:3002/order/getListAllOrder/',
+            method: 'GET',
+            success: function(response) {
+                var tableData = $('#table-data');
+                tableData.empty(); // Clear existing data
+    
+                // Assume the response is an array of orders
+                $.each(response, function(index, order) {
+                  let is_pay = order.status_pay
+                  let total =0;
+                  let listDetail = order.items
+                  listDetail.map((value) => {
+                    total += value.price * value.quantity
+                  })
+                    var row = $('<tr></tr>');
+                    row.append($('<th scope="row"></th>').text(index + 1));
+                    row.append($('<td></td>').text(order.customer_name));
+                    row.append($('<td></td>').text(order.order_date));
+                    is_pay ? row.append($('<td></td>').text('đã thanh toán')) :  row.append($('<td></td>').html('<a href="/payment?orderId=' + order.id + '&total=' + total + ' ">Thanh toan</a>'));
+    
+                    tableData.append(row);
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching data:', error);
+            }
+        });
+    });
+    </script>
+{% endblock %}
